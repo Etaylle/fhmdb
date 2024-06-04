@@ -2,6 +2,7 @@ package at.ac.fhcampuswien.fhmdb.controllers;
 
 import at.ac.fhcampuswien.fhmdb.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.database.*;
+import at.ac.fhcampuswien.fhmdb.patterns.Observer;
 import at.ac.fhcampuswien.fhmdb.ui.UserDialog;
 import at.ac.fhcampuswien.fhmdb.ui.WatchlistCell;
 import com.jfoenix.controls.JFXListView;
@@ -15,8 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class WatchlistController implements Initializable {
-
+public class WatchlistController implements Initializable, Observer {
+    @Override
+    public void update(String message) {
+        System.out.println("WatchlistController received update: " + message);
+    }
     @FXML
     public JFXListView watchlistView;
 
@@ -29,7 +33,8 @@ public class WatchlistController implements Initializable {
             MovieEntity movieEntity = (MovieEntity) o;
 
             try {
-                WatchlistRepository watchlistRepository = new WatchlistRepository();
+                WatchlistRepository watchlistRepository = WatchlistRepository.getInstance();
+                //WatchlistRepository watchlistRepository = new WatchlistRepository();
                 watchlistRepository.removeFromWatchlist(movieEntity.getApiId());
                 observableWatchlist.remove(movieEntity);
             } catch (DataBaseException e) {
@@ -44,6 +49,7 @@ public class WatchlistController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         List<WatchlistMovieEntity> watchlist = new ArrayList<>();
         try {
+            watchlistRepository = WatchlistRepository.getInstance();
             watchlistRepository = new WatchlistRepository();
             watchlist = watchlistRepository.getWatchlist();
 
