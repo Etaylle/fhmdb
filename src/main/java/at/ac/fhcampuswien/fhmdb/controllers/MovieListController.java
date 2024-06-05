@@ -6,8 +6,7 @@ import at.ac.fhcampuswien.fhmdb.api.MovieApiException;
 import at.ac.fhcampuswien.fhmdb.database.*;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
-import at.ac.fhcampuswien.fhmdb.models.SortedState;
-import at.ac.fhcampuswien.fhmdb.patterns.Observer;
+import at.ac.fhcampuswien.fhmdb.patterns.*;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
 import at.ac.fhcampuswien.fhmdb.ui.UserDialog;
 import com.jfoenix.controls.JFXButton;
@@ -22,9 +21,9 @@ import javafx.scene.control.TextField;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+
 
 public class MovieListController implements Initializable, Observer {
     private static MovieListController instance;
@@ -65,8 +64,8 @@ public class MovieListController implements Initializable, Observer {
     public List<Movie> allMovies;
 
     protected ObservableList<Movie> observableMovies = FXCollections.observableArrayList();
-
-    protected SortedState sortedState;
+    private SortState currentSortState;
+    private SortState filterState;
 
     private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
         if (clickedItem instanceof Movie movie) {
@@ -102,7 +101,7 @@ public class MovieListController implements Initializable, Observer {
 
         setMovies(result);
         setMovieList(result);
-        sortedState = SortedState.NONE;
+        setSortState(new NoneSortState());
     }
 
     private List<Movie> readCache() {
@@ -169,24 +168,20 @@ public class MovieListController implements Initializable, Observer {
         observableMovies.clear();
         observableMovies.addAll(movies);
     }
-    public void sortMovies(){
-        if (sortedState == SortedState.NONE || sortedState == SortedState.DESCENDING) {
-            sortMovies(SortedState.ASCENDING);
-        } else if (sortedState == SortedState.ASCENDING) {
-            sortMovies(SortedState.DESCENDING);
-        }
+
+    public void setSortState(SortState sortState) {
+        this.currentSortState = sortState;
+    }
+
+    public ObservableList<Movie> getObservableMovies() {
+        return observableMovies;
     }
     // sort movies based on sortedState
     // by default sorted state is NONE
     // afterwards it switches between ascending and descending
-    public void sortMovies(SortedState sortDirection) {
-        if (sortDirection == SortedState.ASCENDING) {
-            observableMovies.sort(Comparator.comparing(Movie::getTitle));
-            sortedState = SortedState.ASCENDING;
-        } else {
-            observableMovies.sort(Comparator.comparing(Movie::getTitle).reversed());
-            sortedState = SortedState.DESCENDING;
-        }
+    public void sortMovies() {
+
+        currentSortState.sortMovies(this);
     }
 
     public List<Movie> filterByQuery(List<Movie> movies, String query){
@@ -225,28 +220,27 @@ public class MovieListController implements Initializable, Observer {
 
         observableMovies.clear();
         observableMovies.addAll(filteredMovies);
+
+        if(currentSortState instanceof AscendingState)
+        {
+            DescendingState dsc = new DescendingState();
+            dsc.sortMovies(this);
+        }
+        else {
+            AscendingState asc = new AscendingState();
+            asc.sortMovies(this);
+        }
     }
 
     public void searchBtnClicked(ActionEvent actionEvent) {
         String searchQuery = searchField.getText().trim().toLowerCase();
-        String releaseYear = validateComboboxValue(releaseYearComboBox.getSelectionModel().getSelectedItem());
-        String ratingFrom = validateComboboxValue(ratingFromComboBox.getSelectionModel().getSelectedItem());
         String genreValue = validateComboboxValue(genreComboBox.getSelectionModel().getSelectedItem());
 
         Genre genre = null;
         if(genreValue != null) {
             genre = Genre.valueOf(genreValue);
         }
-
-        List<Movie> movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
-
-        setMovies(movies);
-        setMovieList(movies);
-        // applyAllFilters(searchQuery, genre);
-
-        if(sortedState != SortedState.NONE) {
-            sortMovies(sortedState);
-        }
+        applyAllFilters(searchQuery, genre);
     }
 
     public String validateComboboxValue(Object value) {
@@ -269,5 +263,6 @@ public class MovieListController implements Initializable, Observer {
 
     public void sortBtnClicked(ActionEvent actionEvent) {
         sortMovies();
+        currentSortState.nextSortState(this);
     }
 }
