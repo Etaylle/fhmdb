@@ -16,6 +16,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MainController {
+    private static MainController instance;
+
+    public MainController() {
+    }
+    public static synchronized  MainController getInstance() {
+        if (instance == null) {
+            instance = new MainController();
+        }
+        return instance;
+    }
     @FXML
     public JFXHamburger hamburgerMenu;
 

@@ -27,6 +27,16 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class MovieListController implements Initializable, Observer {
+    private static MovieListController instance;
+
+    public MovieListController() {
+    }
+    public static synchronized MovieListController getInstance() {
+        if (instance == null) {
+            instance = new MovieListController();
+        }
+        return instance;
+    }
     @Override
     public void update(String message) {
         System.out.println("MovieListController received update: " + message);
@@ -63,7 +73,7 @@ public class MovieListController implements Initializable, Observer {
             WatchlistMovieEntity watchlistMovieEntity = new WatchlistMovieEntity(
                     movie.getId());
             try {
-                WatchlistRepository repository = new WatchlistRepository();
+                WatchlistRepository repository = WatchlistRepository.getInstance();
                 repository.addToWatchlist(watchlistMovieEntity);
             } catch (DataBaseException e) {
                 UserDialog dialog = new UserDialog("Database Error", "Could not add movie to watchlist");
@@ -97,7 +107,7 @@ public class MovieListController implements Initializable, Observer {
 
     private List<Movie> readCache() {
         try {
-            MovieRepository movieRepository = new MovieRepository();
+            MovieRepository movieRepository = MovieRepository.getInstance();
             return MovieEntity.toMovies(movieRepository.getAllMovies());
         } catch (DataBaseException e) {
             UserDialog dialog = new UserDialog("DB Error", "Could not load movies from DB");
@@ -109,7 +119,7 @@ public class MovieListController implements Initializable, Observer {
     private void writeCache(List<Movie> movies) {
         try {
             // cache movies in db
-            MovieRepository movieRepository = new MovieRepository();
+            MovieRepository movieRepository = MovieRepository.getInstance();
             movieRepository.removeAll();
             movieRepository.addAllMovies(movies);
 

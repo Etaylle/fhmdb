@@ -9,9 +9,22 @@ import java.util.List;
 
 public class WatchlistRepository implements Observable {
 
-    Dao<WatchlistMovieEntity, Long> dao;
+    private Dao<WatchlistMovieEntity, Long> dao;
     private List<Observer> observers = new ArrayList<>();
     private static WatchlistRepository instance;
+    private WatchlistRepository() throws DataBaseException {
+        try {
+            this.dao = DatabaseManager.getInstance().getWatchlistDao();
+        } catch (Exception e) {
+            throw new DataBaseException(e.getMessage());
+        }
+    }
+    public static WatchlistRepository getInstance() throws DataBaseException {
+        if(instance == null) {
+            instance = new WatchlistRepository();
+        }
+        return instance;
+    }
     @Override
     public void addObserver(Observer observer) {
         this.observers.add(observer);
@@ -27,20 +40,6 @@ public class WatchlistRepository implements Observable {
         for (Observer observer : observers) {
             observer.update(message);
         }
-    }
-
-    public WatchlistRepository() throws DataBaseException {
-        try {
-            this.dao = DatabaseManager.getInstance().getWatchlistDao();
-        } catch (Exception e) {
-            throw new DataBaseException(e.getMessage());
-        }
-    }
-    public static WatchlistRepository getInstance() throws DataBaseException {
-        if(instance == null) {
-            instance = new WatchlistRepository();
-        }
-        return instance;
     }
     public List<WatchlistMovieEntity> getWatchlist() throws DataBaseException {
         try {

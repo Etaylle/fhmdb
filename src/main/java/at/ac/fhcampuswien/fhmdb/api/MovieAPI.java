@@ -11,48 +11,67 @@ import java.util.UUID;
 
 public class MovieAPI {
     public static final String DELIMITER = "&";
-    private static final String URL = "https://prog2.fh-campuswien.ac.at/movies"; // https if certificates work
+    private static final String BASE_URL = "https://prog2.fh-campuswien.ac.at/movies"; // https if certificates work
     private static final OkHttpClient client = new OkHttpClient();
 
-    private String buildUrl(UUID id) {
-        StringBuilder url = new StringBuilder(URL);
-        if (id != null) {
-            url.append("/").append(id);
+    public static class UrlBuilder {
+        private final StringBuilder url;
+
+        public UrlBuilder(String baseUrl) {
+            this.url = new StringBuilder(baseUrl);
         }
-        return url.toString();
+
+        public UrlBuilder addPathParam(UUID id) {
+            if (id != null) {
+                url.append("/").append(id);
+            }
+            return this;
+        }
+
+        public UrlBuilder addQueryParam(String key, String value) {
+            if (value != null && !value.isEmpty()) {
+                if (url.indexOf("?") > 0) {
+                    url.append(DELIMITER);
+                } else {
+                    url.append("?");
+                }
+                url.append(key).append("=").append(value);
+            }
+            return this;
+        }
+
+        public UrlBuilder addQueryParam(String key, Genre genre) {
+            if (genre != null) {
+                addQueryParam(key, genre.toString());
+            }
+            return this;
+        }
+
+        public String build() {
+            return url.toString();
+        }
     }
 
     private static String buildUrl(String query, Genre genre, String releaseYear, String ratingFrom) {
-        StringBuilder url = new StringBuilder(URL);
+        return new UrlBuilder(BASE_URL)
+                .addQueryParam("query", query)
+                .addQueryParam("genre", genre)
+                .addQueryParam("releaseYear", releaseYear)
+                .addQueryParam("ratingFrom", ratingFrom)
+                .build();
+    }
 
-        if ( (query != null && !query.isEmpty()) ||
-                genre != null || releaseYear != null || ratingFrom != null) {
-
-            url.append("?");
-
-            // check all parameters and add them to the url
-            if (query != null && !query.isEmpty()) {
-                url.append("query=").append(query).append(DELIMITER);
-            }
-            if (genre != null) {
-                url.append("genre=").append(genre).append(DELIMITER);
-            }
-            if (releaseYear != null) {
-                url.append("releaseYear=").append(releaseYear).append(DELIMITER);
-            }
-            if (ratingFrom != null) {
-                url.append("ratingFrom=").append(ratingFrom).append(DELIMITER);
-            }
-        }
-
-        return url.toString();
+    private String buildUrl(UUID id) {
+        return new UrlBuilder(BASE_URL)
+                .addPathParam(id)
+                .build();
     }
 
     public static List<Movie> getAllMovies() throws MovieApiException {
         return getAllMovies(null, null, null, null);
     }
 
-    public static List<Movie> getAllMovies(String query, Genre genre, String releaseYear, String ratingFrom) throws MovieApiException{
+    public static List<Movie> getAllMovies(String query, Genre genre, String releaseYear, String ratingFrom) throws MovieApiException {
         String url = buildUrl(query, genre, releaseYear, ratingFrom);
         Request request = new Request.Builder()
                 .url(url)
