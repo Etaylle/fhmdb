@@ -76,6 +76,21 @@ public class MainController {
 
     public void setContent(String fxmlPath){
         FXMLLoader loader = new FXMLLoader(MainController.class.getResource(fxmlPath));
+        loader.setControllerFactory(type -> {
+            if (type == MainController.class) {
+                return MainController.getInstance();
+            } else if (type == MovieListController.class) {
+                return MovieListController.getInstance();
+            } else if (type == WatchlistController.class) {
+                return WatchlistController.getInstance();
+            }
+            try {
+                return type.getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         try {
             mainPane.setCenter(loader.load());
         } catch (Exception e) {
@@ -129,4 +144,5 @@ public class MainController {
     public void navigateToMovielist() {
         setContent(UIComponent.MOVIELIST.path);
     }
+
 }
