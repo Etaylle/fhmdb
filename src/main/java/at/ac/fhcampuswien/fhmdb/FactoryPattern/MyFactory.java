@@ -28,6 +28,10 @@ public class MyFactory implements Callback<Class<?>, Object> {
             }
             return watchlistControllerInstance;
         }
-        throw new IllegalArgumentException("Unknown controller type: " + type);
+        try {
+            return type.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
