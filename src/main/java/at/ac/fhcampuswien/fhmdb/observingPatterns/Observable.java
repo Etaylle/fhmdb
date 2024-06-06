@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien.fhmdb.patterns;
+package at.ac.fhcampuswien.fhmdb.observingPatterns;
 
 public interface Observable {
     void addObserver(Observer observer);

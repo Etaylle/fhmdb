@@ -2,7 +2,7 @@ package at.ac.fhcampuswien.fhmdb.controllers;
 
 import at.ac.fhcampuswien.fhmdb.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.database.*;
-import at.ac.fhcampuswien.fhmdb.patterns.Observer;
+import at.ac.fhcampuswien.fhmdb.observingPatterns.Observer;
 import at.ac.fhcampuswien.fhmdb.ui.UserDialog;
 import at.ac.fhcampuswien.fhmdb.ui.WatchlistCell;
 import com.jfoenix.controls.JFXListView;
@@ -16,8 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class WatchlistController implements Initializable, Observer {
+public class WatchlistController implements Initializable, Observer{
     private static WatchlistController instance;
+    @Override
+    public void update(String message) {
+        UserDialog dialog = new UserDialog("Watchlist Update", message);
+        dialog.show();
+    }
 
     public WatchlistController() {
     }
@@ -27,10 +32,7 @@ public class WatchlistController implements Initializable, Observer {
         }
         return instance;
     }
-    @Override
-    public void update(String message) {
-        System.out.println("WatchlistController received update: " + message);
-    }
+
     @FXML
     public JFXListView watchlistView;
     protected ObservableList<MovieEntity> observableWatchlist = FXCollections.observableArrayList();

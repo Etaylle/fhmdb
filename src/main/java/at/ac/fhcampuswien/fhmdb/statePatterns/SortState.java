@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien.fhmdb.patterns;
+package at.ac.fhcampuswien.fhmdb.statePatterns;
 
 import at.ac.fhcampuswien.fhmdb.controllers.MovieListController;
 

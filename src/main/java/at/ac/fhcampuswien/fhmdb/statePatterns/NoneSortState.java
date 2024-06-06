@@ -1,12 +1,11 @@
-package at.ac.fhcampuswien.fhmdb.patterns;
+package at.ac.fhcampuswien.fhmdb.statePatterns;
 
 import at.ac.fhcampuswien.fhmdb.controllers.MovieListController;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 
 import java.util.Comparator;
 
-public class AscendingState implements SortState {
-
+public class NoneSortState implements SortState {
     @Override
     public void sortMovies(MovieListController controller) {
         controller.getObservableMovies().sort(Comparator.comparing(Movie::getTitle));

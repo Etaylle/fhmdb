@@ -6,7 +6,11 @@ import at.ac.fhcampuswien.fhmdb.api.MovieApiException;
 import at.ac.fhcampuswien.fhmdb.database.*;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
-import at.ac.fhcampuswien.fhmdb.patterns.*;
+import at.ac.fhcampuswien.fhmdb.observingPatterns.*;
+import at.ac.fhcampuswien.fhmdb.statePatterns.AscendingState;
+import at.ac.fhcampuswien.fhmdb.statePatterns.DescendingState;
+import at.ac.fhcampuswien.fhmdb.statePatterns.NoneSortState;
+import at.ac.fhcampuswien.fhmdb.statePatterns.SortState;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
 import at.ac.fhcampuswien.fhmdb.ui.UserDialog;
 import com.jfoenix.controls.JFXButton;
@@ -38,7 +42,8 @@ public class MovieListController implements Initializable, Observer {
     }
     @Override
     public void update(String message) {
-        System.out.println("MovieListController received update: " + message);
+        UserDialog dialog = new UserDialog("Watchlist Update", message);
+        dialog.show();
     }
     @FXML
     public JFXButton searchBtn;
@@ -86,6 +91,11 @@ public class MovieListController implements Initializable, Observer {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeState();
         initializeLayout();
+        try {
+            WatchlistRepository.getInstance().addObserver(this);
+        } catch (DataBaseException e) {
+            e.printStackTrace();
+        }
     }
 
     public void initializeState() {
