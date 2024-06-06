@@ -244,13 +244,29 @@ public class MovieListController implements Initializable, Observer {
 
     public void searchBtnClicked(ActionEvent actionEvent) {
         String searchQuery = searchField.getText().trim().toLowerCase();
+        String releaseYear = validateComboboxValue(releaseYearComboBox.getSelectionModel().getSelectedItem());
+        String ratingFrom = validateComboboxValue(ratingFromComboBox.getSelectionModel().getSelectedItem());
         String genreValue = validateComboboxValue(genreComboBox.getSelectionModel().getSelectedItem());
 
         Genre genre = null;
         if(genreValue != null) {
             genre = Genre.valueOf(genreValue);
         }
-        applyAllFilters(searchQuery, genre);
+        List<Movie> movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
+
+        setMovies(movies);
+        setMovieList(movies);
+
+        if(currentSortState instanceof AscendingState)
+        {
+            DescendingState dsc = new DescendingState();
+            dsc.sortMovies(this);
+        }
+        else {
+            AscendingState asc = new AscendingState();
+            asc.sortMovies(this);
+        }
+
     }
 
     public String validateComboboxValue(Object value) {
