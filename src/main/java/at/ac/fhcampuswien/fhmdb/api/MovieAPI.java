@@ -2,6 +2,7 @@ package at.ac.fhcampuswien.fhmdb.api;
 
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
+import at.ac.fhcampuswien.fhmdb.BuilderPattern.MovieAPIRequestBuilder;
 import okhttp3.*;
 import com.google.gson.Gson;
 import java.util.Arrays;
@@ -10,69 +11,20 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class MovieAPI {
-    public static final String DELIMITER = "&";
-    private static final String BASE_URL = "https://prog2.fh-campuswien.ac.at/movies"; // https if certificates work
+    private static final String BASE_URL = "https://prog2.fh-campuswien.ac.at/movies";
     private static final OkHttpClient client = new OkHttpClient();
-
-    public static class UrlBuilder {
-        private final StringBuilder url;
-
-        public UrlBuilder(String baseUrl) {
-            this.url = new StringBuilder(baseUrl);
-        }
-
-        public UrlBuilder addPathParam(UUID id) {
-            if (id != null) {
-                url.append("/").append(id);
-            }
-            return this;
-        }
-
-        public UrlBuilder addQueryParam(String key, String value) {
-            if (value != null && !value.isEmpty()) {
-                if (url.indexOf("?") > 0) {
-                    url.append(DELIMITER);
-                } else {
-                    url.append("?");
-                }
-                url.append(key).append("=").append(value);
-            }
-            return this;
-        }
-
-        public UrlBuilder addQueryParam(String key, Genre genre) {
-            if (genre != null) {
-                addQueryParam(key, genre.toString());
-            }
-            return this;
-        }
-
-        public String build() {
-            return url.toString();
-        }
-    }
-
-    private static String buildUrl(String query, Genre genre, String releaseYear, String ratingFrom) {
-        return new UrlBuilder(BASE_URL)
-                .addQueryParam("query", query)
-                .addQueryParam("genre", genre)
-                .addQueryParam("releaseYear", releaseYear)
-                .addQueryParam("ratingFrom", ratingFrom)
-                .build();
-    }
-
-    private String buildUrl(UUID id) {
-        return new UrlBuilder(BASE_URL)
-                .addPathParam(id)
-                .build();
-    }
 
     public static List<Movie> getAllMovies() throws MovieApiException {
         return getAllMovies(null, null, null, null);
     }
 
     public static List<Movie> getAllMovies(String query, Genre genre, String releaseYear, String ratingFrom) throws MovieApiException {
-        String url = buildUrl(query, genre, releaseYear, ratingFrom);
+        String url = new MovieAPIRequestBuilder(BASE_URL)
+                .query(query)
+                .genre(genre)
+                .releaseYear(releaseYear)
+                .ratingFrom(ratingFrom)
+                .build();
         Request request = new Request.Builder()
                 .url(url)
                 .removeHeader("User-Agent")
@@ -90,17 +42,4 @@ public class MovieAPI {
         }
     }
 
-    public Movie requestMovieById(UUID id) throws MovieApiException {
-        String url = buildUrl(id);
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            Gson gson = new Gson();
-            return gson.fromJson(Objects.requireNonNull(response.body()).string(), Movie.class);
-        } catch (Exception e) {
-            throw new MovieApiException(e.getMessage());
-        }
-    }
 }
