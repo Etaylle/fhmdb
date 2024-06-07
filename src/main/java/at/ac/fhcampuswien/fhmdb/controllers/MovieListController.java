@@ -70,7 +70,7 @@ public class MovieListController implements Initializable, Observer {
 
     protected ObservableList<Movie> observableMovies = FXCollections.observableArrayList();
     private SortState currentSortState;
-    private SortState filterState;
+    private SortState filterSortState;
 
     private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
         if (clickedItem instanceof Movie movie) {
@@ -230,16 +230,6 @@ public class MovieListController implements Initializable, Observer {
 
         observableMovies.clear();
         observableMovies.addAll(filteredMovies);
-
-        if(currentSortState instanceof AscendingState)
-        {
-            DescendingState dsc = new DescendingState();
-            dsc.sortMovies(this);
-        }
-        else {
-            AscendingState asc = new AscendingState();
-            asc.sortMovies(this);
-        }
     }
 
     public void searchBtnClicked(ActionEvent actionEvent) {
@@ -256,17 +246,7 @@ public class MovieListController implements Initializable, Observer {
 
         setMovies(movies);
         setMovieList(movies);
-
-        if(currentSortState instanceof AscendingState)
-        {
-            DescendingState dsc = new DescendingState();
-            dsc.sortMovies(this);
-        }
-        else {
-            AscendingState asc = new AscendingState();
-            asc.sortMovies(this);
-        }
-
+        filterSortState.sortMovies(this);
     }
 
     public String validateComboboxValue(Object value) {
@@ -289,6 +269,7 @@ public class MovieListController implements Initializable, Observer {
 
     public void sortBtnClicked(ActionEvent actionEvent) {
         sortMovies();
+        filterSortState = currentSortState;
         currentSortState.nextSortState(this);
     }
 }
